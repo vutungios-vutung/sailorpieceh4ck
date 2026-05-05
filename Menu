@@ -11,7 +11,7 @@ local Window = Fluent:CreateWindow({
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
     Theme = "Dark",
-    MinimizeKey = Enum.KeyCode.LeftControl, -- Phím tắt đóng/mở nhanh
+    MinimizeKey = Enum.KeyCode.LeftControl,
     UserInfo = true,
     UserInfoTop = false,
     UserInfoTitle = game:GetService("Players").LocalPlayer.DisplayName,
@@ -22,8 +22,8 @@ local Window = Fluent:CreateWindow({
 local Tabs = {
     Main = Window:AddTab({ Title = "Main", Icon = "home" }),
     Auto = Window:AddTab({ Title = "Auto", Icon = "gear" }),
-    Settings = Window:AddTab({ Title = "setting", Icon = "settings" })
-    Info = Window:AddTab({ Title ="Info", Icon = ""})
+    Settings = Window:AddTab({ Title = "setting", Icon = "settings" }),  -- ✅ Thêm dấu phẩy
+    Info = Window:AddTab({ Title = "Info", Icon = "" })
 }
 
 local Minimizer = Fluent:CreateMinimizer({
@@ -37,31 +37,31 @@ local Minimizer = Fluent:CreateMinimizer({
     Visible = true
 })
 
-
 local Options = Fluent.Options
 
-    -- --- TAB MAIN ---
-    local MainSection = Tabs.Main:AddSection("Main Features")
+-- --- TAB MAIN ---
+local MainSection = Tabs.Main:AddSection("Main Features")
 
-    local Toggle1 = Tabs.Main:AddToggle("MyToggle1", {Title = "Kill Aura", Default = false})
-    Toggle1:OnChanged(function()
-        print("Toggle 1 changed:", Options.MyToggle1.Value)
-    end)
+local Toggle1 = Tabs.Main:AddToggle("MyToggle1", { Title = "Kill Aura", Default = false })
+Toggle1:OnChanged(function()
+    print("Toggle 1 changed:", Options.MyToggle1.Value)
+end)
 
-    local AutoFarm = Tabs.Auto:AddToggle("AutoFarmToggle", {Title = "Auto Kill Boss", Default = false})
-    AutoFarm:OnChanged(function()
-        print("Auto Farm:", Options.AutoFarmToggle.Value)
-    end)
+-- --- TAB AUTO ---
+local AutoFarm = Tabs.Auto:AddToggle("AutoFarmToggle", { Title = "Auto Kill Boss", Default = false })
+AutoFarm:OnChanged(function()
+    print("Auto Farm:", Options.AutoFarmToggle.Value)
+end)
 
-    local AutoStats = Tabs.Auto:AddToggle("AutoStatsToggle", {Title = "Auto Stats", Default = false})
-    AutoStats:OnChanged(function()
-        print("Auto Stats:", Options.AutoStatsToggle.Value)
-    end)
+local AutoStats = Tabs.Auto:AddToggle("AutoStatsToggle", { Title = "Auto Stats", Default = false })
+AutoStats:OnChanged(function()
+    print("Auto Stats:", Options.AutoStatsToggle.Value)
+end)
 
-     local InfoStats =
-Tab.Info:AddSection("Info")
+-- --- TAB INFO ---                        -- ✅ Sửa Tab.Info → Tabs.Info
+local InfoSection = Tabs.Info:AddSection("Info")
 
-    local myProfile = {
+local myProfile = {
     ten = "VuTungIOS",
     noi_dung_1 = "Developer (TungMythic, phongle2009.)",
     noi_dung_2 = "Nhà Tài Trợ: dough_veru0876."
@@ -71,17 +71,15 @@ print("Tên: " .. myProfile.ten)
 print("Nội dung: " .. myProfile.noi_dung_1)
 print("Nội dung: " .. myProfile.noi_dung_2)
 
-end
+-- ✅ Xóa "end" thừa ở đây
 
--- Cấu hình Managers cho Tab Settings
+-- --- SETTINGS ---
 SaveManager:SetLibrary(Fluent)
 InterfaceManager:SetLibrary(Fluent)
 SaveManager:IgnoreThemeSettings()
 SaveManager:SetIgnoreIndexes({})
-
 InterfaceManager:SetFolder("FluentScriptHub")
 SaveManager:SetFolder("FluentScriptHub/specific-game")
-
 InterfaceManager:BuildInterfaceSection(Tabs.Settings)
 SaveManager:BuildConfigSection(Tabs.Settings)
 
