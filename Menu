@@ -1,0 +1,94 @@
+local Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/discoart/FluentPlus/refs/heads/main/Beta.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+
+local Window = Fluent:CreateWindow({
+    Title = "Sa Lời Pít " .. Fluent.Version,
+    SubTitle = "by VuTungIOS",
+    Search = true,
+    Icon = "home",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(580, 460),
+    Acrylic = true,
+    Theme = "Dark",
+    MinimizeKey = Enum.KeyCode.LeftControl, -- Phím tắt đóng/mở nhanh
+    UserInfo = true,
+    UserInfoTop = false,
+    UserInfoTitle = game:GetService("Players").LocalPlayer.DisplayName,
+    UserInfoSubtitle = "User",
+    UserInfoSubtitleColor = Color3.fromRGB(71, 123, 255)
+})
+
+local Tabs = {
+    Main = Window:AddTab({ Title = "Main", Icon = "home" }),
+    Auto = Window:AddTab({ Title = "Auto", Icon = "gear" }),
+    Settings = Window:AddTab({ Title = "setting", Icon = "settings" })
+    Info = Window:AddTab({ Title ="Info", Icon = ""})
+}
+
+local Minimizer = Fluent:CreateMinimizer({
+    Icon = "rbxassetid://108898897274709",
+    Size = UDim2.fromOffset(44, 44),
+    Position = UDim2.new(0, 320, 0, 24),
+    Acrylic = true,
+    Corner = 10,
+    Transparency = 0.5,
+    Draggable = true,
+    Visible = true
+})
+
+
+local Options = Fluent.Options
+
+    -- --- TAB MAIN ---
+    local MainSection = Tabs.Main:AddSection("Main Features")
+
+    local Toggle1 = Tabs.Main:AddToggle("MyToggle1", {Title = "Kill Aura", Default = false})
+    Toggle1:OnChanged(function()
+        print("Toggle 1 changed:", Options.MyToggle1.Value)
+    end)
+
+    local AutoFarm = Tabs.Auto:AddToggle("AutoFarmToggle", {Title = "Auto Kill Boss", Default = false})
+    AutoFarm:OnChanged(function()
+        print("Auto Farm:", Options.AutoFarmToggle.Value)
+    end)
+
+    local AutoStats = Tabs.Auto:AddToggle("AutoStatsToggle", {Title = "Auto Stats", Default = false})
+    AutoStats:OnChanged(function()
+        print("Auto Stats:", Options.AutoStatsToggle.Value)
+    end)
+
+     local InfoStats =
+Tab.Info:AddSection("Info")
+
+    local myProfile = {
+    ten = "VuTungIOS",
+    noi_dung_1 = "Developer (TungMythic, phongle2009.)",
+    noi_dung_2 = "Nhà Tài Trợ: dough_veru0876."
+}
+
+print("Tên: " .. myProfile.ten)
+print("Nội dung: " .. myProfile.noi_dung_1)
+print("Nội dung: " .. myProfile.noi_dung_2)
+
+end
+
+-- Cấu hình Managers cho Tab Settings
+SaveManager:SetLibrary(Fluent)
+InterfaceManager:SetLibrary(Fluent)
+SaveManager:IgnoreThemeSettings()
+SaveManager:SetIgnoreIndexes({})
+
+InterfaceManager:SetFolder("FluentScriptHub")
+SaveManager:SetFolder("FluentScriptHub/specific-game")
+
+InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+SaveManager:BuildConfigSection(Tabs.Settings)
+
+Window:SelectTab(1)
+
+Fluent:Notify({
+    Title = "VuTungIOS",
+    Content = "Cảm ơn vì đã sử dụng script!",
+    Duration = 8
+})
