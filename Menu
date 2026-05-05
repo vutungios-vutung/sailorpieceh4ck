@@ -22,8 +22,9 @@ local Window = Fluent:CreateWindow({
 local Tabs = {
     Main = Window:AddTab({ Title = "Main", Icon = "home" }),
     Auto = Window:AddTab({ Title = "Auto", Icon = "gear" }),
-    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" }),
-    Info = Window:AddTab({ Title = "Info", Icon = "info" })
+    Skill = Window:AddTab({ Title = "Skill", Icon = "zap" }),
+    Info = Window:AddTab({ Title = "Info", Icon = "info" }),
+    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
 }
 
 local Minimizer = Fluent:CreateMinimizer({
@@ -38,6 +39,30 @@ local Minimizer = Fluent:CreateMinimizer({
 })
 
 local Options = Fluent.Options
+
+-- ══════════════════════════════════════
+--           SERVICES & VARIABLES
+-- ══════════════════════════════════════
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+
+-- Map tên vũ khí → tên tool trong game Sailor Piece
+local WeaponToolMap = {
+    ["Melee"]        = "Melee",       -- Tên tool tay không trong game
+    ["Kiếm"]         = "Sword",       -- Tên tool kiếm trong game
+    ["Trái Ác Quỷ"]  = "DevilFruit",  -- Tên tool trái ác quỷ trong game
+}
+
+-- Map skill → KeyCode
+local KeyMap = {
+    Z = Enum.KeyCode.Z,
+    X = Enum.KeyCode.X,
+    C = Enum.KeyCode.C,
+    V = Enum.KeyCode.V,
+    F = Enum.KeyCode.F,
+}
 
 -- ══════════════════════════════════════
 --              TAB MAIN
@@ -58,11 +83,10 @@ end)
 -- ══════════════════════════════════════
 local AutoSection = Tabs.Auto:AddSection("🤖 Auto Features")
 
--- Dropdown chọn Boss
-local BossDropdown = Tabs.Auto:AddDropdown("Boss", {
-    Title = "Boss",
+local BossDropdown = Tabs.Auto:AddDropdown("BossDropdown", {
+    Title = "Chọn Boss",
     Description = "Chọn boss muốn farm tự động.",
-    Values = {"1", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen"},
+    Values = {"one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen"},
     Multi = false,
     Search = true,
     Default = 1,
@@ -72,7 +96,6 @@ BossDropdown:OnChanged(function(Value)
     print("Boss được chọn:", Value)
 end)
 
--- Toggle Auto Kill Boss
 local AutoFarm = Tabs.Auto:AddToggle("AutoFarmToggle", {
     Title = "Auto Kill Boss",
     Description = "Tự động tiêu diệt boss đã chọn trong Dropdown bên trên.",
@@ -82,7 +105,6 @@ AutoFarm:OnChanged(function()
     print("Auto Farm:", Options.AutoFarmToggle.Value)
 end)
 
--- Toggle Auto Stats
 local AutoStats = Tabs.Auto:AddToggle("AutoStatsToggle", {
     Title = "Auto Stats",
     Description = "Tự động phân bổ điểm chỉ số khi lên cấp.",
@@ -90,6 +112,141 @@ local AutoStats = Tabs.Auto:AddToggle("AutoStatsToggle", {
 })
 AutoStats:OnChanged(function()
     print("Auto Stats:", Options.AutoStatsToggle.Value)
+end)
+
+-- ══════════════════════════════════════
+--              TAB SKILL
+-- ══════════════════════════════════════
+local SkillSection = Tabs.Skill:AddSection("⚡ Skill Settings")
+
+-- Dropdown chọn vũ khí
+local WeaponDropdown = Tabs.Skill:AddDropdown("WeaponDropdown", {
+    Title = "Vũ Khí",
+    Description = "Chọn vũ khí sử dụng khi auto skill.",
+    Values = {"Melee", "Kiếm", "Trái Ác Quỷ"},
+    Multi = false,
+    Search = true,
+    Default = 1,
+})
+WeaponDropdown:SetValue("Melee")
+WeaponDropdown:OnChanged(function(Value)
+    print("Vũ khí được chọn:", Value)
+end)
+
+-- Dropdown chọn Skill
+local SkillDropdown = Tabs.Skill:AddDropdown("SkillDropdown", {
+    Title = "Skill",
+    Description = "Chọn phím skill tự động sử dụng (Z, X, C, V, F).",
+    Values = {"Z", "X", "C", "V", "F"},
+    Multi = false,
+    Search = true,
+    Default = 1,
+})
+SkillDropdown:SetValue("Z")
+SkillDropdown:OnChanged(function(Value)
+    print("Skill được chọn:", Value)
+end)
+
+-- ══════════════════════════════════════
+-- HÀM CHỌN VŨ KHÍ TRONG SAILOR PIECE
+-- ══════════════════════════════════════
+local function equipWeapon(weaponName)
+    local toolName = WeaponToolMap[weaponName]
+    if not toolName then return end
+
+    local character = LocalPlayer.Character
+    if not character then return end
+
+    -- Thử tìm trong Backpack trước
+    local backpack = LocalPlayer.Backpack
+    local tool = backpack:FindFirstChild(toolName)
+
+    -- Nếu không có trong Backpack thì tìm trong Character (đang cầm)
+    if not tool then
+        tool = character:FindFirstChild(toolName)
+    end
+
+    if tool and tool:IsA("Tool") then
+        -- Equip bằng cách fire humanoid
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid:EquipTool(tool)
+            print("Đã trang bị:", toolName)
+        end
+    else
+        print("Không tìm thấy vũ khí:", toolName)
+    end
+end
+
+-- ══════════════════════════════════════
+-- HÀM TỰ ĐỘNG DÙNG SKILL
+-- ══════════════════════════════════════
+local function fireSkillKey(keyCode)
+    -- Dùng VirtualInputManager để nhấn phím skill
+    local VIM = game:GetService("VirtualInputManager")
+    VIM:SendKeyEvent(true, keyCode, false, game)
+    task.wait(0.05)
+    VIM:SendKeyEvent(false, keyCode, false, game)
+end
+
+-- ══════════════════════════════════════
+-- TOGGLE ONLY USE
+-- ══════════════════════════════════════
+local autoSkillLoop = nil
+
+local OnlyUseToggle = Tabs.Skill:AddToggle("OnlyUseToggle", {
+    Title = "Only Use",
+    Description = "Tự động trang bị vũ khí đã chọn và liên tục dùng skill đã chọn.",
+    Default = false
+})
+
+OnlyUseToggle:OnChanged(function()
+    local isActive = Options.OnlyUseToggle.Value
+
+    -- Dừng loop cũ
+    if autoSkillLoop then
+        autoSkillLoop:Disconnect()
+        autoSkillLoop = nil
+    end
+
+    if isActive then
+        local weaponName = Options.WeaponDropdown.Value
+        local skillKey  = Options.SkillDropdown.Value
+        local keyCode   = KeyMap[skillKey]
+
+        print("✅ Bắt đầu Only Use | Vũ khí: " .. weaponName .. " | Skill: " .. skillKey)
+
+        -- Trang bị vũ khí ngay lập tức
+        equipWeapon(weaponName)
+
+        local ticker = 0
+        autoSkillLoop = RunService.Heartbeat:Connect(function(dt)
+            ticker = ticker + dt
+
+            -- Cứ 0.8 giây dùng skill 1 lần (chỉnh tùy cooldown game)
+            if ticker >= 0.8 then
+                ticker = 0
+
+                -- Đảm bảo vũ khí đúng vẫn được trang bị
+                local character = LocalPlayer.Character
+                if character then
+                    local equipped = character:FindFirstChildOfClass("Tool")
+                    local expectedTool = WeaponToolMap[Options.WeaponDropdown.Value]
+                    if not equipped or equipped.Name ~= expectedTool then
+                        equipWeapon(Options.WeaponDropdown.Value)
+                    end
+                end
+
+                -- Dùng skill
+                local currentKey = KeyMap[Options.SkillDropdown.Value]
+                if currentKey then
+                    fireSkillKey(currentKey)
+                end
+            end
+        end)
+    else
+        print("❌ Đã tắt Only Use")
+    end
 end)
 
 -- ══════════════════════════════════════
