@@ -135,10 +135,7 @@ local WeaponDropdown = Tabs.Skill:AddDropdown("WeaponDropdown", {
     Values = {
         "Melee",
         "Kiếm",
-        "Trái Ác Quỷ",
-        "Cosmic Being",
-        "Dragon Goddess",
-        "Light",
+        "Trái Ác Quỷ" 
     },
     Multi = false,
     Search = false,   -- ✅ Tắt search để tránh lỗi chọn
