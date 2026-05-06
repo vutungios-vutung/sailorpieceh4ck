@@ -20,11 +20,17 @@ local Window = Fluent:CreateWindow({
 })
 
 local Tabs = {
-    Main     = Window:AddTab({ Title = "Main",     Icon = "home"          }),
-    Auto     = Window:AddTab({ Title = "Auto",     Icon = "refresh-cw"    }), -- ✅ icon auto
-    Skill    = Window:AddTab({ Title = "Skill",    Icon = "zap"           }), -- ✅ icon skill
-    Info     = Window:AddTab({ Title = "Info",     Icon = "info"          }),
-    Settings = Window:AddTab({ Title = "Settings", Icon = "settings"      })
+    Information = Window:AddTab({ Title = "Information", Icon = "info"      }),
+    Priority    = Window:AddTab({ Title = "Priority",    Icon = "list"      }),
+    Main        = Window:AddTab({ Title = "Main",        Icon = "home"      }),
+    Automation  = Window:AddTab({ Title = "Automation",  Icon = "repeat-2"  }),
+    Artifact    = Window:AddTab({ Title = "Artifact",    Icon = "gem"       }),
+    Dungeon     = Window:AddTab({ Title = "Dungeon",     Icon = "door-open" }),
+    Player      = Window:AddTab({ Title = "Player",      Icon = "user"      }),
+    Teleport    = Window:AddTab({ Title = "Teleport",    Icon = "map-pin"   }),
+    Webhook     = Window:AddTab({ Title = "Webhook",     Icon = "send"      }),
+    Misc        = Window:AddTab({ Title = "Misc",        Icon = "apple"     }),
+    Config      = Window:AddTab({ Title = "Config",      Icon = "settings"  }),
 }
 
 local Minimizer = Fluent:CreateMinimizer({
@@ -40,262 +46,748 @@ local Minimizer = Fluent:CreateMinimizer({
 
 local Options = Fluent.Options
 
-local Players        = game:GetService("Players")
-local RunService     = game:GetService("RunService")
-local LocalPlayer    = Players.LocalPlayer
+-- ================================================
+-- TAB: INFORMATION
+-- ================================================
+Tabs.Information:AddSection("User")
 
--- ══════════════════════════════════════
--- MAP VŨ KHÍ → TÊN TOOL TRONG GAME
--- ══════════════════════════════════════
-local WeaponToolMap = {
-    ["Melee"]          = "Melee",
-    ["Kiếm"]           = "Sword",
-    ["Trái Ác Quỷ"]    = "DevilFruit",
-    ["Cosmic Being"]   = "Cosmic Being",
-    ["Dragon Goddess"] = "Dragon Goddess",
-    ["Light"]          = "Light",
-}
+Tabs.Information:AddParagraph({ Title = "Type",      Content = "Beta User" })
+Tabs.Information:AddParagraph({ Title = "Time Left", Content = "Lifetime"  })
+Tabs.Information:AddParagraph({ Title = "Executor",  Content = (identifyexecutor and identifyexecutor() or "Unknown") })
 
-local KeyMap = {
-    Z = Enum.KeyCode.Z,
-    X = Enum.KeyCode.X,
-    C = Enum.KeyCode.C,
-    V = Enum.KeyCode.V,
-    F = Enum.KeyCode.F,
-}
+Tabs.Information:AddSection("Game")
 
--- ══════════════════════════════════════
---              TAB MAIN
--- ══════════════════════════════════════
-local MainSection = Tabs.Main:AddSection("⚔️ Main Features")
-
-local Toggle1 = Tabs.Main:AddToggle("MyToggle1", {
-    Title = "Kill Aura",
-    Description = "Tự động tấn công kẻ địch xung quanh bạn.",
-    Default = false
-})
-Toggle1:OnChanged(function()
-    print("Kill Aura:", Options.MyToggle1.Value)
-end)
-
-local MainSection2 = Tabs.Main:AddSection("🏠 Navigation")
-Tabs.Main:AddParagraph({
-    Title = "Hướng Dẫn",
-    Content = "Dùng các tab bên trái để điều hướng:\n• Auto → Farm boss tự động\n• Skill → Cài skill & vũ khí\n• Info → Thông tin script"
-})
-
--- ══════════════════════════════════════
---              TAB AUTO
--- ══════════════════════════════════════
-local AutoSection = Tabs.Auto:AddSection("🤖 Auto Features")
-
-local BossDropdown = Tabs.Auto:AddDropdown("BossDropdown", {
-    Title = "Chọn Boss",
-    Description = "Chọn boss muốn farm tự động.",
-    Values = {"one", "two", "three", "four", "five", "six", "seven",
-              "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen"},
-    Multi = false,
-    Search = true,
-    Default = 1,
-})
-BossDropdown:SetValue("four")
-BossDropdown:OnChanged(function(Value)
-    print("Boss được chọn:", Value)
-end)
-
-local AutoFarm = Tabs.Auto:AddToggle("AutoFarmToggle", {
-    Title = "Auto Kill Boss",
-    Description = "Tự động tiêu diệt boss đã chọn trong Dropdown bên trên.",
-    Default = false
-})
-AutoFarm:OnChanged(function()
-    print("Auto Farm:", Options.AutoFarmToggle.Value)
-end)
-
-local AutoSection2 = Tabs.Auto:AddSection("📊 Auto Stats")
-
-local AutoStats = Tabs.Auto:AddToggle("AutoStatsToggle", {
-    Title = "Auto Stats",
-    Description = "Tự động phân bổ điểm chỉ số khi lên cấp.",
-    Default = false
-})
-AutoStats:OnChanged(function()
-    print("Auto Stats:", Options.AutoStatsToggle.Value)
-end)
-
--- ══════════════════════════════════════
---              TAB SKILL
--- ══════════════════════════════════════
-local SkillSection = Tabs.Skill:AddSection("🗡️ Vũ Khí")
-
--- ✅ Dropdown vũ khí — dùng đúng format, thêm đủ vũ khí
-local WeaponDropdown = Tabs.Skill:AddDropdown("WeaponDropdown", {
-    Title = "Vũ Khí",
-    Description = "Chọn vũ khí sử dụng khi auto skill.",
-    Values = {
-        "Melee",
-        "Kiếm",
-        "Trái Ác Quỷ" 
-    },
-    Multi = false,
-    Search = false,   -- ✅ Tắt search để tránh lỗi chọn
-    Default = 1,
-})
-WeaponDropdown:OnChanged(function(Value)
-    print("Vũ khí được chọn:", Value)
-end)
-
-local SkillSection2 = Tabs.Skill:AddSection("⚡ Skill")
-
--- ✅ Dropdown skill — tắt Search để fix lỗi không chọn được
-local SkillDropdown = Tabs.Skill:AddDropdown("SkillDropdown", {
-    Title = "Skill",
-    Description = "Chọn phím skill tự động sử dụng.",
-    Values = {"Z", "X", "C", "V", "F"},
-    Multi = false,
-    Search = false,   -- ✅ Fix lỗi không chọn được
-    Default = 1,
-})
-SkillDropdown:OnChanged(function(Value)
-    print("Skill được chọn:", Value)
-end)
-
--- ══════════════════════════════════════
--- HÀM TRANG BỊ VŨ KHÍ
--- ══════════════════════════════════════
-local function equipWeapon(weaponName)
-    local toolName = WeaponToolMap[weaponName]
-    if not toolName then return end
-
-    local character = LocalPlayer.Character
-    if not character then return end
-
-    local backpack = LocalPlayer.Backpack
-    local tool = backpack:FindFirstChild(toolName)
-              or character:FindFirstChild(toolName)
-
-    if tool and tool:IsA("Tool") then
-        local humanoid = character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid:EquipTool(tool)
-            print("✅ Đã trang bị:", toolName)
-        end
-    else
-        -- Thử tìm bất kỳ tool nào có tên chứa keyword
-        for _, v in pairs(backpack:GetChildren()) do
-            if v:IsA("Tool") and string.find(v.Name:lower(), toolName:lower()) then
-                local humanoid = character:FindFirstChildOfClass("Humanoid")
-                if humanoid then
-                    humanoid:EquipTool(v)
-                    print("✅ Tìm thấy & trang bị:", v.Name)
-                end
-                return
-            end
-        end
-        print("❌ Không tìm thấy:", toolName)
+Tabs.Information:AddButton({
+    Title = "Redeem All Codes",
+    Description = "Tự động nhập tất cả codes",
+    Callback = function()
+        Fluent:Notify({ Title = "Codes", Content = "Đang redeem codes...", Duration = 3 })
     end
+})
+
+Tabs.Information:AddSection("Others")
+
+Tabs.Information:AddButton({
+    Title = "Join Discord Server",
+    Description = "Copy link Discord vào clipboard",
+    Callback = function()
+        if setclipboard then
+            setclipboard("https://discord.gg/Bb7BEsYDM7")
+            Fluent:Notify({ Title = "Discord", Content = "Đã copy link!", Duration = 3 })
+        end
+    end
+})
+
+-- ================================================
+-- TAB: PRIORITY
+-- ================================================
+Tabs.Priority:AddSection("Cấu Hình Priority")
+
+local PriorityTasks = {"Boss","Pity Boss","Summon [Other]","Summon","Level Farm","All Mob Farm","Mob","Merchant","Alt Help"}
+for i = 1, #PriorityTasks do
+    Tabs.Priority:AddDropdown("SelectedPriority_" .. i, {
+        Title = "Priority " .. i,
+        Values = PriorityTasks,
+        Default = PriorityTasks[i],
+        Multi = false,
+    })
 end
 
--- ══════════════════════════════════════
--- HÀM DÙNG SKILL
--- ══════════════════════════════════════
-local function fireSkill(keyCode)
-    local VIM = game:GetService("VirtualInputManager")
-    VIM:SendKeyEvent(true, keyCode, false, game)
-    task.wait(0.1)
-    VIM:SendKeyEvent(false, keyCode, false, game)
-end
+-- ================================================
+-- TAB: MAIN
+-- ================================================
+Tabs.Main:AddSection("Autofarm - Mob")
 
--- ══════════════════════════════════════
--- TOGGLE ONLY USE
--- ══════════════════════════════════════
-local SkillSection3 = Tabs.Skill:AddSection("🔁 Auto Use")
-
-local autoSkillLoop = nil
-
-local OnlyUseToggle = Tabs.Skill:AddToggle("OnlyUseToggle", {
-    Title = "Only Use",
-    Description = "Tự động trang bị vũ khí đã chọn và liên tục dùng skill đã chọn.",
-    Default = false
+Tabs.Main:AddDropdown("SelectedMob", {
+    Title = "Select Mob",
+    Values = {},
+    Default = nil,
+    Multi = true,
 })
 
-OnlyUseToggle:OnChanged(function()
-    local isActive = Options.OnlyUseToggle.Value
+Tabs.Main:AddButton({ Title = "Refresh Mob List", Callback = function()
+    Fluent:Notify({ Title = "Refresh", Content = "Đã refresh!", Duration = 2 })
+end })
 
-    if autoSkillLoop then
-        autoSkillLoop:Disconnect()
-        autoSkillLoop = nil
+Tabs.Main:AddToggle("MobFarm",    { Title = "Autofarm Selected Mob",  Default = false })
+Tabs.Main:AddToggle("AllMobFarm", { Title = "Autofarm All Mobs",      Default = false })
+Tabs.Main:AddToggle("LevelFarm",  { Title = "Autofarm Level",         Default = false })
+
+Tabs.Main:AddSection("Autofarm - Boss")
+
+Tabs.Main:AddDropdown("SelectedBosses", {
+    Title = "Select Boss",
+    Values = {},
+    Default = nil,
+    Multi = true,
+})
+
+Tabs.Main:AddToggle("BossesFarm",    { Title = "Autofarm Selected Boss", Default = false })
+Tabs.Main:AddToggle("AllBossesFarm", { Title = "Autofarm All Bosses",    Default = false })
+
+Tabs.Main:AddSection("Summon Boss")
+
+Tabs.Main:AddDropdown("SelectedSummon", {
+    Title = "Select Summon Boss",
+    Values = {},
+    Default = nil,
+    Multi = false,
+})
+
+Tabs.Main:AddDropdown("SelectedSummonDiff", {
+    Title = "Select Difficulty",
+    Values = {"Normal","Medium","Hard","Extreme"},
+    Default = "Normal",
+    Multi = false,
+})
+
+Tabs.Main:AddToggle("AutoSummon",    { Title = "Auto Summon",         Default = false })
+Tabs.Main:AddToggle("SummonBossFarm",{ Title = "Autofarm Summon Boss",Default = false })
+
+Tabs.Main:AddSection("Pity Boss")
+
+Tabs.Main:AddDropdown("SelectedBuildPity", {
+    Title = "Select Boss [Build Pity]",
+    Values = {},
+    Default = nil,
+    Multi = true,
+})
+
+Tabs.Main:AddDropdown("SelectedUsePity", {
+    Title = "Select Boss [Use Pity]",
+    Values = {},
+    Default = nil,
+    Multi = false,
+})
+
+Tabs.Main:AddDropdown("SelectedPityDiff", {
+    Title = "Select Difficulty [Use Pity]",
+    Values = {"Normal","Medium","Hard","Extreme"},
+    Default = "Normal",
+    Multi = false,
+})
+
+Tabs.Main:AddToggle("PityBossFarm", { Title = "Autofarm Pity Boss", Default = false })
+
+Tabs.Main:AddSection("Summon Boss (Other)")
+
+Tabs.Main:AddDropdown("SelectedOtherSummon", {
+    Title = "Select Summon Boss (Other)",
+    Values = {"StrongestHistory","StrongestToday","Rimuru","Anos","TrueAizen","Atomic","AbyssalEmpress"},
+    Default = nil,
+    Multi = false,
+})
+
+Tabs.Main:AddDropdown("SelectedOtherSummonDiff", {
+    Title = "Select Difficulty",
+    Values = {"Normal","Medium","Hard","Extreme"},
+    Default = "Normal",
+    Multi = false,
+})
+
+Tabs.Main:AddToggle("AutoOtherSummon",  { Title = "Auto Summon",         Default = false })
+Tabs.Main:AddToggle("OtherSummonFarm",  { Title = "Autofarm Summon Boss", Default = false })
+
+Tabs.Main:AddSection("Alt Help")
+
+Tabs.Main:AddDropdown("SelectedAltBoss", {
+    Title = "Select Boss",
+    Values = {},
+    Default = nil,
+    Multi = false,
+})
+
+Tabs.Main:AddDropdown("SelectedAltDiff", {
+    Title = "Select Difficulty",
+    Values = {"Normal","Medium","Hard","Extreme"},
+    Default = "Normal",
+    Multi = false,
+})
+
+for i = 1, 5 do
+    Tabs.Main:AddDropdown("SelectedAlt_" .. i, {
+        Title = "Select Alt #" .. i,
+        Values = {},
+        Default = nil,
+        Multi = false,
+    })
+end
+
+Tabs.Main:AddToggle("AltBossFarm", { Title = "Auto Help Alt", Default = false })
+
+Tabs.Main:AddSection("Config Autofarm")
+
+Tabs.Main:AddDropdown("SelectedWeaponType", {
+    Title = "Select Weapon Type",
+    Values = {"Melee","Sword","Power"},
+    Default = nil,
+    Multi = true,
+})
+
+Tabs.Main:AddSlider("SwitchWeaponCD", { Title = "Switch Weapon Delay", Default = 4, Min = 1, Max = 20 })
+Tabs.Main:AddToggle("SwitchWeapon",   { Title = "Auto Switch Weapon",  Default = true })
+Tabs.Main:AddToggle("IslandTP",       { Title = "Island TP [Autofarm]",Default = true })
+Tabs.Main:AddSlider("IslandTPCD",     { Title = "Island TP CD",        Default = 67, Min = 0, Max = 250 })
+Tabs.Main:AddSlider("M1Speed",        { Title = "M1 Attack Cooldown",  Default = 0,  Min = 0, Max = 100 })
+
+Tabs.Main:AddDropdown("SelectedMovementType", {
+    Title = "Select Movement Type",
+    Values = {"Teleport","Tween"},
+    Default = "Tween",
+    Multi = false,
+})
+
+Tabs.Main:AddDropdown("SelectedFarmType", {
+    Title = "Select Farm Type",
+    Values = {"Behind","Above","Below"},
+    Default = "Behind",
+    Multi = false,
+})
+
+Tabs.Main:AddSlider("Distance",   { Title = "Farm Distance", Default = 12,  Min = 0,  Max = 30  })
+Tabs.Main:AddSlider("TweenSpeed", { Title = "Tween Speed",   Default = 160, Min = 0,  Max = 500 })
+
+Tabs.Main:AddToggle("InstaKill", { Title = "Instant Kill", Default = false })
+
+Tabs.Main:AddDropdown("InstaKillType", {
+    Title = "Select InstaKill Type",
+    Values = {"V1","V2"},
+    Default = "V1",
+    Multi = false,
+})
+
+Tabs.Main:AddSlider("InstaKillHP",    { Title = "HP% For Insta-Kill",    Default = 90,     Min = 1,  Max = 100 })
+
+Tabs.Main:AddSection("Haki")
+
+Tabs.Main:AddToggle("ObserHaki",    { Title = "Auto Observation Haki", Default = false })
+Tabs.Main:AddToggle("ArmHaki",      { Title = "Auto Armament Haki",    Default = false })
+Tabs.Main:AddToggle("ConquerorHaki",{ Title = "Auto Conqueror Haki",   Default = false })
+
+Tabs.Main:AddSection("Skill")
+
+Tabs.Main:AddDropdown("SelectedSkills", {
+    Title = "Select Skills",
+    Values = {"Z","X","C","V","F"},
+    Default = nil,
+    Multi = true,
+})
+
+Tabs.Main:AddDropdown("AutoSkillType", {
+    Title = "Select Mode",
+    Values = {"Normal","Instant"},
+    Default = "Normal",
+    Multi = false,
+})
+
+Tabs.Main:AddToggle("OnlyTarget",       { Title = "Target Only",      Default = false })
+Tabs.Main:AddToggle("AutoSkill_BossOnly",{ Title = "Use On Boss Only", Default = false })
+Tabs.Main:AddSlider("AutoSkill_BossHP", { Title = "Boss HP%",         Default = 100, Min = 1, Max = 100 })
+Tabs.Main:AddToggle("AutoSkill",        { Title = "Auto Use Skills",   Default = false })
+Tabs.Main:AddToggle("AutoM1",           { Title = "Auto Attack (M1)",  Default = false })
+Tabs.Main:AddToggle("KillAura",         { Title = "Kill Aura",         Default = false })
+Tabs.Main:AddSlider("KillAuraCD",       { Title = "Kill Aura CD",      Default = 10, Min = 1, Max = 100 })
+Tabs.Main:AddSlider("KillAuraRange",    { Title = "Kill Aura Range",   Default = 200, Min = 0, Max = 200 })
+
+Tabs.Main:AddSection("Combo")
+
+Tabs.Main:AddInput("ComboPattern", {
+    Title = "Combo Pattern",
+    Default = "Z > X > C > V > F",
+    Placeholder = "vd: Z > X > C > V > F",
+})
+
+Tabs.Main:AddDropdown("ComboMode", {
+    Title = "Select Mode",
+    Values = {"Normal","Instant"},
+    Default = "Normal",
+    Multi = false,
+})
+
+Tabs.Main:AddToggle("ComboBossOnly", { Title = "Boss Only",       Default = false })
+Tabs.Main:AddToggle("AutoCombo",     { Title = "Auto Skill Combo",Default = false })
+
+Tabs.Main:AddSection("Auto Switch - Title")
+
+Tabs.Main:AddDropdown("DefaultTitle", {
+    Title = "Select Default Title",
+    Values = {"None","Best EXP","Best Money & Gem","Best Luck","Best DMG"},
+    Default = "None",
+    Multi = false,
+})
+
+Tabs.Main:AddDropdown("Title_Mob", {
+    Title = "Title [Mob]",
+    Values = {"None","Best EXP","Best Money & Gem","Best Luck","Best DMG"},
+    Default = "None",
+    Multi = false,
+})
+
+Tabs.Main:AddDropdown("Title_Boss", {
+    Title = "Title [Boss]",
+    Values = {"None","Best EXP","Best Money & Gem","Best Luck","Best DMG"},
+    Default = "None",
+    Multi = false,
+})
+
+Tabs.Main:AddDropdown("Title_BossHP", {
+    Title = "Title [Boss HP%]",
+    Values = {"None","Best EXP","Best Money & Gem","Best Luck","Best DMG"},
+    Default = "None",
+    Multi = false,
+})
+
+Tabs.Main:AddSlider("Title_BossHPAmt", { Title = "Change Until Boss HP%", Default = 15, Min = 0, Max = 100 })
+Tabs.Main:AddToggle("AutoTitle", { Title = "Auto Switch Title", Default = false })
+
+Tabs.Main:AddSection("Auto Switch - Rune")
+
+Tabs.Main:AddDropdown("DefaultRune",  { Title = "Select Default Rune",   Values = {"None"}, Default = "None", Multi = false })
+Tabs.Main:AddDropdown("Rune_Mob",     { Title = "Rune [Mob]",            Values = {"None"}, Default = "None", Multi = false })
+Tabs.Main:AddDropdown("Rune_Boss",    { Title = "Rune [Boss]",           Values = {"None"}, Default = "None", Multi = false })
+Tabs.Main:AddDropdown("Rune_BossHP",  { Title = "Rune [Boss HP%]",       Values = {"None"}, Default = "None", Multi = false })
+Tabs.Main:AddSlider("Rune_BossHPAmt", { Title = "Change Until Boss HP%", Default = 15, Min = 0, Max = 100    })
+Tabs.Main:AddToggle("AutoRune", { Title = "Auto Switch Rune", Default = false })
+
+Tabs.Main:AddSection("Auto Switch - Build")
+
+Tabs.Main:AddDropdown("DefaultBuild",  { Title = "Select Default Build",  Values = {"1","2","3","4","5","None"}, Default = "None", Multi = false })
+Tabs.Main:AddDropdown("Build_Mob",     { Title = "Build [Mob]",           Values = {"1","2","3","4","5","None"}, Default = "None", Multi = false })
+Tabs.Main:AddDropdown("Build_Boss",    { Title = "Build [Boss]",          Values = {"1","2","3","4","5","None"}, Default = "None", Multi = false })
+Tabs.Main:AddDropdown("Build_BossHP",  { Title = "Build [Boss HP%]",      Values = {"1","2","3","4","5","None"}, Default = "None", Multi = false })
+Tabs.Main:AddSlider("Build_BossHPAmt", { Title = "Change Until Boss HP%", Default = 15, Min = 0, Max = 100    })
+Tabs.Main:AddToggle("AutoBuild", { Title = "Auto Switch Build", Default = false })
+
+-- ================================================
+-- TAB: AUTOMATION
+-- ================================================
+Tabs.Automation:AddSection("Ascend")
+Tabs.Automation:AddToggle("AutoAscend", { Title = "Auto Ascend", Default = false })
+
+Tabs.Automation:AddSection("Rolls")
+
+Tabs.Automation:AddSlider("RollCD", { Title = "Roll Delay (giây)", Default = 30, Min = 1, Max = 100 })
+
+Tabs.Automation:AddDropdown("SelectedTrait", { Title = "Select Trait",   Values = {}, Default = nil, Multi = true })
+Tabs.Automation:AddToggle("AutoTrait",        { Title = "Auto Roll Trait",Default = false })
+
+Tabs.Automation:AddDropdown("SelectedRace",   { Title = "Select Race",    Values = {}, Default = nil, Multi = true })
+Tabs.Automation:AddToggle("AutoRace",         { Title = "Auto Roll Race", Default = false })
+
+Tabs.Automation:AddDropdown("SelectedClan",   { Title = "Select Clan",    Values = {}, Default = nil, Multi = true })
+Tabs.Automation:AddToggle("AutoClan",         { Title = "Auto Roll Clan", Default = false })
+
+Tabs.Automation:AddSection("Trade")
+
+Tabs.Automation:AddDropdown("SelectedTradePlr",   { Title = "Select Player",    Values = {}, Default = nil, Multi = false })
+Tabs.Automation:AddDropdown("SelectedTradeItems", { Title = "Select Item (s)",  Values = {}, Default = nil, Multi = true  })
+Tabs.Automation:AddToggle("ReqTrade",             { Title = "Auto Send Request",Default = false })
+Tabs.Automation:AddToggle("ReqTradeAccept",       { Title = "Auto Accept Request", Default = false })
+Tabs.Automation:AddToggle("AutoAccept",           { Title = "Auto Accept Trade",   Default = false })
+
+Tabs.Automation:AddSection("Level & Stats")
+
+Tabs.Automation:AddDropdown("SelectedStats", {
+    Title = "Select Stat (s)",
+    Values = {"Melee","Defense","Sword","Power"},
+    Default = nil,
+    Multi = true,
+})
+Tabs.Automation:AddToggle("AutoStats", { Title = "Auto UP Stats", Default = false })
+
+Tabs.Automation:AddSection("Gem Stats")
+
+Tabs.Automation:AddDropdown("SelectedGemStats", { Title = "Select Stat (s)",  Values = {}, Default = nil, Multi = true })
+Tabs.Automation:AddDropdown("SelectedRank",      { Title = "Select Rank (s)",  Values = {}, Default = nil, Multi = true })
+Tabs.Automation:AddSlider("StatsRollCD",         { Title = "Roll Delay",       Default = 10, Min = 1, Max = 100 })
+Tabs.Automation:AddToggle("AutoRollStats",       { Title = "Auto Roll Stats",  Default = false })
+
+Tabs.Automation:AddSection("Misc")
+
+Tabs.Automation:AddToggle("AutoSkillTree",     { Title = "Auto Skill Tree",         Default = false })
+Tabs.Automation:AddToggle("ArtifactMilestone", { Title = "Auto Artifact Milestone", Default = false })
+
+Tabs.Automation:AddSection("Enchant & Blessing")
+
+Tabs.Automation:AddDropdown("SelectedEnchant",  { Title = "Select Enchant",  Values = {}, Default = nil, Multi = true })
+Tabs.Automation:AddToggle("AutoEnchant",        { Title = "Auto Enchant",     Default = false })
+Tabs.Automation:AddToggle("AutoEnchantAll",     { Title = "Auto Enchant All", Default = false })
+
+Tabs.Automation:AddDropdown("SelectedBlessing", { Title = "Select Blessing",  Values = {}, Default = nil, Multi = true })
+Tabs.Automation:AddToggle("AutoBlessing",       { Title = "Auto Blessing",     Default = false })
+Tabs.Automation:AddToggle("AutoBlessingAll",    { Title = "Auto Blessing All", Default = false })
+
+Tabs.Automation:AddSection("Spec Passive")
+
+Tabs.Automation:AddDropdown("SelectedPassive", { Title = "Select Weapon (s)", Values = {}, Default = nil, Multi = true })
+Tabs.Automation:AddDropdown("SelectedSpec",    { Title = "Target Passives",   Values = {}, Default = nil, Multi = true })
+Tabs.Automation:AddSlider("SpecRollCD",        { Title = "Roll Delay",        Default = 10, Min = 1, Max = 100 })
+Tabs.Automation:AddToggle("AutoSpec",          { Title = "Auto Reroll Passive",Default = false })
+
+-- ================================================
+-- TAB: ARTIFACT
+-- ================================================
+Tabs.Artifact:AddSection("Status")
+
+Tabs.Artifact:AddParagraph({ Title = "Dust",      Content = "N/A" })
+Tabs.Artifact:AddParagraph({ Title = "Inventory", Content = "Helmet: 0/500 | Gloves: 0/500 | Body: 0/500 | Boots: 0/500" })
+
+Tabs.Artifact:AddSection("Auto Equip")
+
+Tabs.Artifact:AddDropdown("Eq_Type", { Title = "Artifact Type",    Values = {}, Default = nil, Multi = true })
+Tabs.Artifact:AddDropdown("Eq_MS",   { Title = "Main Stat Filter", Values = {}, Default = nil, Multi = true })
+Tabs.Artifact:AddDropdown("Eq_SS",   { Title = "Sub Stat Filter",  Values = {}, Default = nil, Multi = true })
+Tabs.Artifact:AddToggle("ArtifactEquip", { Title = "Auto Equip", Default = false })
+
+Tabs.Artifact:AddSection("Upgrade")
+
+Tabs.Artifact:AddSlider("UpgradeLimit",  { Title = "Upgrade Limit",   Default = 0, Min = 0, Max = 15 })
+Tabs.Artifact:AddDropdown("Up_MS",       { Title = "Main Stat Filter", Values = {}, Default = nil, Multi = true })
+Tabs.Artifact:AddToggle("ArtifactUpgrade",{ Title = "Auto Upgrade",    Default = false })
+Tabs.Artifact:AddToggle("UpgradeStage",  { Title = "Upgrade in Stages",Default = false })
+
+Tabs.Artifact:AddSection("Lock")
+
+Tabs.Artifact:AddDropdown("Lock_Type",   { Title = "Artifact Type",    Values = {}, Default = nil, Multi = true })
+Tabs.Artifact:AddDropdown("Lock_Set",    { Title = "Artifact Set",     Values = {}, Default = nil, Multi = true })
+Tabs.Artifact:AddDropdown("Lock_MS",     { Title = "Main Stat Filter", Values = {}, Default = nil, Multi = true })
+Tabs.Artifact:AddDropdown("Lock_SS",     { Title = "Sub Stat Filter",  Values = {}, Default = nil, Multi = true })
+Tabs.Artifact:AddSlider("Lock_MinSS",   { Title = "Min Sub-Stats",    Default = 0, Min = 0, Max = 4 })
+Tabs.Artifact:AddToggle("ArtifactLock", { Title = "Auto Lock",        Default = false })
+
+Tabs.Artifact:AddSection("Delete")
+
+Tabs.Artifact:AddDropdown("Del_Type",       { Title = "Artifact Type",     Values = {},              Default = nil, Multi = true })
+Tabs.Artifact:AddDropdown("Del_Set",        { Title = "Artifact Set",      Values = {},              Default = nil, Multi = true })
+Tabs.Artifact:AddDropdown("Del_MS_Helmet",  { Title = "Main Stat [Helmet]",Values = {"FlatDefense","Defense"}, Default = nil, Multi = true })
+Tabs.Artifact:AddDropdown("Del_MS_Gloves",  { Title = "Main Stat [Gloves]",Values = {"Damage"},       Default = nil, Multi = true })
+Tabs.Artifact:AddDropdown("Del_MS_Body",    { Title = "Main Stat [Body]",  Values = {},              Default = nil, Multi = true })
+Tabs.Artifact:AddDropdown("Del_MS_Boots",   { Title = "Main Stat [Boots]", Values = {},              Default = nil, Multi = true })
+Tabs.Artifact:AddDropdown("Del_SS",         { Title = "Sub Stat Filter",   Values = {},              Default = nil, Multi = true })
+Tabs.Artifact:AddSlider("Del_MinSS",        { Title = "Min Sub-Stats",     Default = 0, Min = 0, Max = 4 })
+Tabs.Artifact:AddToggle("ArtifactDelete",   { Title = "Auto Delete",       Default = false })
+Tabs.Artifact:AddToggle("DeleteUnlock",     { Title = "Auto Delete Unlocked",Default = false })
+
+-- ================================================
+-- TAB: DUNGEON
+-- ================================================
+Tabs.Dungeon:AddSection("Auto Join")
+
+Tabs.Dungeon:AddParagraph({ Title = "Info", Content = "BossRush & Infinite Tower Supported." })
+
+Tabs.Dungeon:AddDropdown("SelectedDungeon", {
+    Title = "Select Dungeon",
+    Values = {"CidDungeon","RuneDungeon","DoubleDungeon","BossRush","InfiniteTower"},
+    Default = nil,
+    Multi = false,
+})
+
+Tabs.Dungeon:AddToggle("AutoDungeon",      { Title = "Auto Join Dungeon",   Default = false })
+Tabs.Dungeon:AddToggle("AutoInfiniteTower",{ Title = "Auto Infinite Tower", Default = false })
+
+Tabs.Dungeon:AddSection("Config")
+
+Tabs.Dungeon:AddDropdown("SelectedDiff", {
+    Title = "Select Difficulty",
+    Values = {"Easy","Medium","Hard","Extreme"},
+    Default = nil,
+    Multi = false,
+})
+
+Tabs.Dungeon:AddToggle("AutoDiff",       { Title = "Auto Select Difficulty",Default = false })
+Tabs.Dungeon:AddToggle("AutoReplay",     { Title = "Auto Replay",           Default = false })
+Tabs.Dungeon:AddToggle("DungeonAutofarm",{ Title = "Autofarm Dungeon",      Default = false })
+
+-- ================================================
+-- TAB: PLAYER
+-- ================================================
+Tabs.Player:AddSection("General")
+
+Tabs.Player:AddToggle("WS",  { Title = "WalkSpeed",  Default = false })
+Tabs.Player:AddSlider("WSValue",  { Title = "WalkSpeed Value",  Default = 16,  Min = 16, Max = 250 })
+Tabs.Player:AddToggle("JP",  { Title = "JumpPower",  Default = false })
+Tabs.Player:AddSlider("JPValue",  { Title = "JumpPower Value",  Default = 50,  Min = 0,  Max = 500 })
+Tabs.Player:AddToggle("TPW", { Title = "TPWalk",     Default = false })
+Tabs.Player:AddSlider("TPWValue", { Title = "TPWalk Value",     Default = 10,  Min = 1,  Max = 100 })
+Tabs.Player:AddToggle("HH",  { Title = "HipHeight",  Default = false })
+Tabs.Player:AddSlider("HHValue",  { Title = "HipHeight Value",  Default = 20,  Min = 0,  Max = 100 })
+Tabs.Player:AddToggle("Noclip",        { Title = "Noclip",            Default = false })
+Tabs.Player:AddToggle("AntiKnockback", { Title = "Anti Knockback",    Default = false })
+Tabs.Player:AddToggle("Disable3DRender",{ Title = "Disable 3D Rendering",Default = false })
+Tabs.Player:AddToggle("Grav",  { Title = "Gravity",         Default = false })
+Tabs.Player:AddSlider("GravValue",  { Title = "Gravity Value",    Default = 196, Min = 0,   Max = 500 })
+Tabs.Player:AddToggle("Zoom",  { Title = "Camera Zoom",     Default = false })
+Tabs.Player:AddSlider("ZoomValue",  { Title = "Zoom Value",        Default = 128, Min = 128, Max = 10000 })
+Tabs.Player:AddToggle("FOV",   { Title = "Field of View",   Default = false })
+Tabs.Player:AddSlider("FOVValue",   { Title = "FOV Value",         Default = 70,  Min = 30,  Max = 120 })
+Tabs.Player:AddToggle("LimitFPS",   { Title = "Set Max FPS",       Default = false })
+Tabs.Player:AddSlider("LimitFPSValue",   { Title = "FPS Value",         Default = 60,  Min = 5,   Max = 360 })
+Tabs.Player:AddToggle("FPSBoost",    { Title = "FPS Boost",         Default = false })
+Tabs.Player:AddToggle("FPSBoost_AF", { Title = "FPS Boost [Autofarm]",Default = false })
+
+Tabs.Player:AddSection("Server")
+
+Tabs.Player:AddToggle("AntiAFK",          { Title = "Anti AFK",           Default = true  })
+Tabs.Player:AddToggle("AntiKick",         { Title = "Anti Kick (Client)", Default = false })
+Tabs.Player:AddToggle("AutoReconnect",    { Title = "Auto Reconnect",     Default = false })
+Tabs.Player:AddToggle("NoGameplayPaused", { Title = "No Gameplay Paused", Default = false })
+
+Tabs.Player:AddButton({
+    Title = "Rejoin",
+    Description = "Vào lại server hiện tại",
+    Callback = function()
+        game:GetService("TeleportService"):Teleport(game.PlaceId, game:GetService("Players").LocalPlayer)
     end
+})
 
-    if isActive then
-        local weaponName = Options.WeaponDropdown.Value
-        local skillKey   = Options.SkillDropdown.Value
-        local keyCode    = KeyMap[skillKey]
+Tabs.Player:AddSection("Game")
 
-        print("▶️ Only Use ON | Vũ khí: " .. tostring(weaponName) .. " | Skill: " .. tostring(skillKey))
+Tabs.Player:AddToggle("InstantPP",    { Title = "Instant Prompt", Default = false })
+Tabs.Player:AddToggle("Fullbright",   { Title = "Fullbright",     Default = false })
+Tabs.Player:AddToggle("NoFog",        { Title = "No Fog",         Default = false })
+Tabs.Player:AddToggle("OverrideTime", { Title = "Time Of Day",    Default = false })
+Tabs.Player:AddSlider("OverrideTimeValue", { Title = "Time Value", Default = 12, Min = 0, Max = 24 })
 
-        -- Trang bị vũ khí ngay
-        equipWeapon(weaponName)
+Tabs.Player:AddSection("Safety")
 
-        local ticker = 0
-        autoSkillLoop = RunService.Heartbeat:Connect(function(dt)
-            ticker = ticker + dt
-            if ticker >= 0.8 then
-                ticker = 0
+Tabs.Player:AddToggle("AutoKick", { Title = "Auto Kick", Default = true })
 
-                -- Re-equip nếu vũ khí sai
-                local character = LocalPlayer.Character
-                if character then
-                    local currentWeapon = Options.WeaponDropdown.Value
-                    local expectedName  = WeaponToolMap[currentWeapon] or currentWeapon
-                    local equipped = character:FindFirstChildOfClass("Tool")
-                    if not equipped or not string.find(equipped.Name:lower(), expectedName:lower()) then
-                        equipWeapon(currentWeapon)
-                    end
-                end
+Tabs.Player:AddDropdown("SelectedKickType", {
+    Title = "Select Type",
+    Values = {"Mod","Player Join","Public Server"},
+    Default = {"Mod"},
+    Multi = true,
+})
 
-                -- Dùng skill
-                local currentKey = KeyMap[Options.SkillDropdown.Value]
-                if currentKey then
-                    fireSkill(currentKey)
-                end
-            end
-        end)
-    else
-        print("⏹️ Only Use OFF")
+-- ================================================
+-- TAB: TELEPORT
+-- ================================================
+Tabs.Teleport:AddSection("Island")
+
+Tabs.Teleport:AddDropdown("SelectedIsland", {
+    Title = "Select Island",
+    Values = {"Starter","Jungle","Desert","Snow","Sailor","Shibuya","HuecoMundo","Boss","Dungeon","Shinjuku","Valentine","Slime","Academy","Judgement","SoulSociety","Tower"},
+    Default = nil,
+    Multi = false,
+    Callback = function(value)
+        if value then
+            Fluent:Notify({ Title = "Teleport", Content = "Đang đến " .. value, Duration = 2 })
+        end
     end
-end)
+})
 
--- ══════════════════════════════════════
---              TAB INFO
--- ══════════════════════════════════════
-local InfoSection = Tabs.Info:AddSection("📋 Thông Tin Script")
+Tabs.Teleport:AddSection("Quest NPC")
 
-Tabs.Info:AddParagraph({ Title = "👨‍💻 Tác Giả",   Content = "VuTungIOS" })
-Tabs.Info:AddParagraph({ Title = "🛠️ Developer",  Content = "TungMythic, phongle2009." })
-Tabs.Info:AddParagraph({ Title = "💎 Nhà Tài Trợ", Content = "dough_veru0876." })
-Tabs.Info:AddParagraph({ Title = "📌 Phiên Bản",  Content = "Beta - Đang phát triển" })
-Tabs.Info:AddParagraph({ Title = "📢 Lưu Ý",      Content = "Script chỉ dùng cho mục đích giải trí. Không chịu trách nhiệm nếu bị ban." })
+Tabs.Teleport:AddDropdown("SelectedQuestNPC", {
+    Title = "Select NPC",
+    Values = {"DungeonUnlock","SlimeKeyUnlock"},
+    Default = nil,
+    Multi = false,
+})
 
--- ══════════════════════════════════════
---              TAB SETTINGS
--- ══════════════════════════════════════
+Tabs.Teleport:AddButton({
+    Title = "Teleport to Level Based Quest",
+    Description = "TP đến NPC quest theo level",
+    Callback = function()
+        Fluent:Notify({ Title = "Teleport", Content = "Đang tìm NPC...", Duration = 2 })
+    end
+})
+
+Tabs.Teleport:AddSection("Misc NPC")
+
+Tabs.Teleport:AddDropdown("SelectedMiscNPC", {
+    Title = "Select NPC [Misc]",
+    Values = {"Artifacts","Blessing","Enchant","SkillTree","Cupid","ArmHaki","Observation","Conqueror"},
+    Default = nil,
+    Multi = false,
+})
+
+Tabs.Teleport:AddDropdown("SelectedMiscAllNPC", {
+    Title = "Select NPC [All NPCs]",
+    Values = {},
+    Default = nil,
+    Multi = false,
+})
+
+Tabs.Teleport:AddSection("Moveset NPC")
+
+Tabs.Teleport:AddDropdown("SelectedMovesetNPC", {
+    Title = "Select NPC",
+    Values = {},
+    Default = nil,
+    Multi = false,
+})
+
+Tabs.Teleport:AddSection("Mastery NPC")
+
+Tabs.Teleport:AddDropdown("SelectedMasteryNPC", {
+    Title = "Select NPC",
+    Values = {},
+    Default = nil,
+    Multi = false,
+})
+
+-- ================================================
+-- TAB: WEBHOOK
+-- ================================================
+Tabs.Webhook:AddSection("Config")
+
+Tabs.Webhook:AddInput("WebhookURL", {
+    Title = "Webhook URL",
+    Default = "",
+    Placeholder = "Enter Webhook URL...",
+})
+
+Tabs.Webhook:AddInput("UID", {
+    Title = "User ID",
+    Default = "",
+    Placeholder = "Enter UID...",
+})
+
+Tabs.Webhook:AddDropdown("SelectedData", {
+    Title = "Select Data",
+    Values = {"Name","Stats","New Items","All Items"},
+    Default = nil,
+    Multi = true,
+})
+
+Tabs.Webhook:AddDropdown("SelectedItemRarity", {
+    Title = "Select Rarity To Send",
+    Values = {"Common","Uncommon","Rare","Epic","Legendary","Mythical","Secret"},
+    Default = {"Common","Uncommon","Rare","Epic","Legendary","Mythical","Secret"},
+    Multi = true,
+})
+
+Tabs.Webhook:AddToggle("PingUser",    { Title = "Ping User",    Default = false })
+Tabs.Webhook:AddSlider("WebhookDelay",{ Title = "Send every [x] minutes", Default = 5, Min = 1, Max = 30 })
+Tabs.Webhook:AddToggle("SendWebhook", { Title = "Send Webhook", Default = false })
+
+Tabs.Webhook:AddButton({
+    Title = "Test Webhook",
+    Description = "Gửi webhook test ngay",
+    Callback = function()
+        Fluent:Notify({ Title = "Webhook", Content = "Đang gửi test...", Duration = 3 })
+    end
+})
+
+-- ================================================
+-- TAB: MISC
+-- ================================================
+Tabs.Misc:AddSection("Merchant")
+
+Tabs.Misc:AddDropdown("SelectedMerchantItems",  { Title = "Select Item (s)", Values = {}, Default = nil, Multi = true })
+Tabs.Misc:AddToggle("AutoMerchant",             { Title = "Auto Buy Selected Items", Default = false })
+
+Tabs.Misc:AddSection("Dungeon Merchant")
+
+Tabs.Misc:AddDropdown("SelectedDungeonMerchantItems",{ Title = "Select Item (s)", Values = {}, Default = nil, Multi = true })
+Tabs.Misc:AddToggle("AutoDungeonMerchant",           { Title = "Auto Buy Dungeon Items", Default = false })
+
+Tabs.Misc:AddSection("Valentine Merchant")
+
+Tabs.Misc:AddDropdown("SelectedValentineMerchantItems",{ Title = "Select Item (s)", Values = {}, Default = nil, Multi = true })
+Tabs.Misc:AddToggle("AutoValentineMerchant",           { Title = "Auto Buy Selected Items", Default = false })
+
+Tabs.Misc:AddSection("Tower Merchant")
+
+Tabs.Misc:AddDropdown("SelectedTowerMerchantItems",{ Title = "Select Item (s)", Values = {}, Default = nil, Multi = true })
+Tabs.Misc:AddToggle("AutoTowerMerchant",           { Title = "Auto Buy Tower Items", Default = false })
+
+Tabs.Misc:AddSection("Boss Rush Merchant")
+
+Tabs.Misc:AddDropdown("SelectedBossRushMerchantItems",{ Title = "Select Item (s)", Values = {}, Default = nil, Multi = true })
+Tabs.Misc:AddToggle("AutoBossRushMerchant",           { Title = "Auto Buy Boss Rush Items", Default = false })
+
+Tabs.Misc:AddSection("Chests")
+
+Tabs.Misc:AddDropdown("SelectedChests", {
+    Title = "Select Chest (s)",
+    Values = {"Common","Rare","Epic","Legendary","Mythical","Secret","Aura Crate","Cosmetic Crate"},
+    Default = nil,
+    Multi = true,
+})
+Tabs.Misc:AddToggle("AutoChest", { Title = "Auto Open Chest", Default = false })
+
+Tabs.Misc:AddSection("Craft")
+
+Tabs.Misc:AddDropdown("SelectedCraftItems", {
+    Title = "Select Item (s) To Craft",
+    Values = {"SlimeKey","DivineGrail"},
+    Default = nil,
+    Multi = true,
+})
+Tabs.Misc:AddToggle("AutoCraftItem",    { Title = "Auto Craft Item",            Default = false })
+Tabs.Misc:AddToggle("AutoDeleteNotif",  { Title = "Auto Hide Notification",     Default = false })
+
+Tabs.Misc:AddSection("Puzzles")
+
+Tabs.Misc:AddButton({ Title = "Complete Dungeon Puzzle",   Description = "Yêu cầu Level 5000+", Callback = function() Fluent:Notify({ Title = "Puzzle", Content = "Dungeon Puzzle...", Duration = 3 }) end })
+Tabs.Misc:AddButton({ Title = "Complete Slime Key Puzzle", Callback = function() Fluent:Notify({ Title = "Puzzle", Content = "Slime Key Puzzle...", Duration = 3 }) end })
+Tabs.Misc:AddButton({ Title = "Complete Valentine Puzzle", Callback = function() Fluent:Notify({ Title = "Puzzle", Content = "Valentine Puzzle...", Duration = 3 }) end })
+Tabs.Misc:AddButton({ Title = "Complete Demonite Puzzle",  Callback = function() Fluent:Notify({ Title = "Puzzle", Content = "Demonite Puzzle...",  Duration = 3 }) end })
+Tabs.Misc:AddButton({ Title = "Complete Hogyoku Puzzle",   Description = "Yêu cầu Level 8500+", Callback = function() Fluent:Notify({ Title = "Puzzle", Content = "Hogyoku Puzzle...",  Duration = 3 }) end })
+
+Tabs.Misc:AddSection("Questlines")
+
+Tabs.Misc:AddDropdown("SelectedQuestline",         { Title = "Select Questline",          Values = {}, Default = nil, Multi = false })
+Tabs.Misc:AddDropdown("SelectedQuestline_Player",  { Title = "Select Player",             Values = {}, Default = nil, Multi = false })
+Tabs.Misc:AddDropdown("SelectedQuestline_DMGTaken",{ Title = "Select Mob [Take Damage]",  Values = {}, Default = nil, Multi = false })
+
+Tabs.Misc:AddButton({ Title = "Refresh Entities", Callback = function()
+    Fluent:Notify({ Title = "Refresh", Content = "Đã refresh danh sách!", Duration = 2 })
+end })
+
+Tabs.Misc:AddToggle("AutoQuestline", { Title = "Auto Questline [BETA]", Default = false })
+
+-- ================================================
+-- TAB: CONFIG
+-- ================================================
+Tabs.Config:AddSection("Menu")
+
+Tabs.Config:AddToggle("ShowCustomCursor", {
+    Title = "Custom Cursor",
+    Default = true,
+})
+
+Tabs.Config:AddDropdown("NotificationSide", {
+    Title = "Notification Side",
+    Values = {"Left","Right"},
+    Default = "Right",
+    Multi = false,
+    Callback = function(value)
+        Fluent:SetNotifySide(value)
+    end
+})
+
+Tabs.Config:AddButton({
+    Title = "Unload Script",
+    Description = "Tắt và gỡ script",
+    Callback = function()
+        Fluent:Destroy()
+    end
+})
+
+-- ================================================
+-- SETUP MANAGERS
+-- ================================================
 SaveManager:SetLibrary(Fluent)
 InterfaceManager:SetLibrary(Fluent)
 SaveManager:IgnoreThemeSettings()
-SaveManager:SetIgnoreIndexes({})
-InterfaceManager:SetFolder("FluentScriptHub")
-SaveManager:SetFolder("FluentScriptHub/specific-game")
-InterfaceManager:BuildInterfaceSection(Tabs.Settings)
-SaveManager:BuildConfigSection(Tabs.Settings)
+SaveManager:SetIgnoreIndexes({
+    "SelectedIsland","SelectedQuestNPC","SelectedMiscNPC",
+    "SelectedMiscAllNPC","SelectedMovesetNPC","SelectedMasteryNPC"
+})
 
--- ══════════════════════════════════════
---              KHỞI ĐỘNG
--- ══════════════════════════════════════
+InterfaceManager:SetFolder("SaLoiPit")
+SaveManager:SetFolder("SaLoiPit/SailorPiece")
+
+InterfaceManager:BuildInterfaceSection(Tabs.Config)
+SaveManager:BuildConfigSection(Tabs.Config)
+
 Window:SelectTab(1)
 
 Fluent:Notify({
-    Title = "VuTungIOS",
-    Content = "Cảm ơn vì đã sử dụng script!",
+    Title = "Sa Lời Pít",
+    Content = "Cảm ơn vì đã sử dụng script! ❤️ - VuTungIOS",
     Duration = 8
 })
